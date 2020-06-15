@@ -5,11 +5,13 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 public class Main3Activity extends AppCompatActivity {
     /* Hint:
@@ -27,11 +29,33 @@ public class Main3Activity extends AppCompatActivity {
      */
     private static final String FILENAME = "Main3Activity.java";
     private static final String TAG = "Whack-A-Mole3.0!";
+    private Button exitButton;
+    MyDBHandler dbHandler = new MyDBHandler(this,null,null,1);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main3);
+        exitButton = (Button) findViewById(R.id.backToLoginBtn);
+        exitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Main3Activity.this,MainActivity.class);
+                startActivity(intent);
+            }
+        });
+        Intent receivingIntent = getIntent();
+        String userName = receivingIntent.getStringExtra("Username");
+        UserData user = dbHandler.findUser(userName);
+        RecyclerView recyclerView = findViewById(R.id.levelRecyclerView);
+        CustomScoreAdaptor mAdapter = new CustomScoreAdaptor(this,user);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(mAdapter);
+        Log.v(TAG, FILENAME + ": Show level for User: "+ userName);
+
         /* Hint:
         This method receives the username account data and looks up the database for find the
         corresponding information to display in the recyclerView for the level selections page.

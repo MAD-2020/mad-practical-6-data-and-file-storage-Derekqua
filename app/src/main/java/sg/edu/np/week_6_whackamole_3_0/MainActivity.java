@@ -24,10 +24,51 @@ public class MainActivity extends AppCompatActivity {
     private static final String FILENAME = "MainActivity.java";
     private static final String TAG = "Whack-A-Mole3.0!";
 
+    MyDBHandler dbHandler = new MyDBHandler(this,null,null,1);
+    private Button loginButton;
+    private TextView newUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        newUser = (TextView) findViewById(R.id.redirectSignUp);
+        newUser.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Intent redirectToSignUp = new Intent(MainActivity.this,Main2Activity.class);
+                redirectToSignUp.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                Log.v(TAG, FILENAME + ": Create new user!");
+                startActivity(redirectToSignUp);
+                return false;
+            }
+        });
+        loginButton = (Button)findViewById(R.id.loginButton);
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText etUsername = findViewById(R.id.RegisterUsername);
+                EditText etPassword  = findViewById(R.id.RegisterPassword);
+                Log.v(TAG, FILENAME + ": Logging in with: " + etUsername.getText().toString() + ": " + etPassword.getText().toString());
+                if (isValidUser(etUsername.getText().toString(),etPassword.getText().toString()))
+                {
+                    Log.v(TAG, FILENAME + ": Valid User! Logging in");
+                    Intent intent = new Intent(MainActivity.this,Main3Activity.class);
+                    intent.putExtra("Username", etUsername.getText().toString());
+                    startActivity(intent);
+                    Toast.makeText(MainActivity.this,"Valid",Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Log.v(TAG, FILENAME + ": Invalid user!");
+                    Toast.makeText(MainActivity.this,"Invalid Username or Password",Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+
+
+
 
         /* Hint:
             This method creates the necessary login inputs and the new user creation ontouch.
@@ -47,7 +88,17 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    public boolean isValidUser(String userName, String password){
+    public boolean isValidUser(String userName, String password)
+    {
+        UserData dbData = dbHandler.findUser(userName);
+        if (dbData == null)
+        {
+            return false;
+        }
+        Log.v(TAG, FILENAME + ": Running Checks..." + dbData.getMyUserName() + ": " + dbData.getMyPassword() +" <--> "+ userName + " " + password);
+        return dbData.getMyUserName().equals(userName) && dbData.getMyPassword().equals(password);
+
+
 
         /* HINT:
             This method is called to access the database and return a true if user is valid and false if not.
